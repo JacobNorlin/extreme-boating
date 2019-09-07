@@ -1,6 +1,6 @@
-bin
-src
 target
+package-lock.json
+dist
 
 # Logs
 logs
