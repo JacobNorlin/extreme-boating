@@ -1,6 +1,6 @@
 interface Point {
-    x: number
-    y: number
+    x: number;
+    y: number;
 }
 
 export class AABB {
@@ -22,10 +22,14 @@ export class AABB {
 
     intersects(other: AABB) {
         return (
-            this.x >= other.x &&
-            this.x <= other.r &&
-            this.y >= other.y &&
-            this.y <= other.b
+            (this.x >= other.x &&
+                this.x <= other.r &&
+                this.y >= other.y &&
+                this.y <= other.b) ||
+            (other.x >= this.x &&
+                other.x <= this.r &&
+                other.y >= this.y &&
+                other.y <= this.b)
         );
     }
 

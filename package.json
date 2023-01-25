@@ -6,19 +6,25 @@
   "license": "MIT",
   "main": "src/main.ts",
   "scripts": {
-    "test": "ts-node --transpile-only scripts/test.ts",
+    "start": "ts-node --transpile-only scripts/run.ts",
     "build": "ts-node --transpile-only scripts/build.ts",
     "dev": "npm-watch",
-    "build:defs": "ts-node scripts/dev"
+    "build:defs": "ts-node scripts/dev",
+    "test": "jest",
+    "watch": "jest --watch"
   },
   "dependencies": {
     "w3ts": "^2.1.3"
   },
   "devDependencies": {
+    "@babel/preset-env": "^7.20.2",
+    "@babel/preset-typescript": "^7.18.6",
     "@types/fs-extra": "8.1.1",
+    "@types/jest": "^29.4.0",
     "@types/node": "12.19.1",
     "@types/pako": "1.0.1",
     "fs-extra": "8.1.0",
+    "jest": "^29.4.0",
     "lua-types": "2.8.0",
     "luamin": "1.0.4",
     "mdx-m3-viewer": "5.11.2",
