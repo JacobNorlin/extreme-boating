@@ -1,10 +1,7 @@
+import { CollisionEngine } from "engine/collisionEngine";
 import { Effect, Timer, Unit } from "w3ts";
 import { ProjDefinition } from "./projectile";
-
-interface Vec2 {
-    x: number;
-    y: number;
-}
+import { Vec2 } from "./vec2";
 
 interface Projectile {
     owner: Unit;
@@ -14,38 +11,7 @@ interface Projectile {
     effect: Effect;
     distance: number;
     maxDistance: number;
-}
-
-class Vec2 {
-    x: number = 0;
-    y: number = 0;
-
-    constructor(x1: number, y1: number) {
-        this.x = x1;
-        this.y = y1;
-    }
-
-    rotate(angle: number) {
-        const cos = math.cos(angle);
-        const sin = math.sin(angle);
-        const nx = cos * this.x - sin * this.y;
-        const ny = sin * this.x + cos * this.y;
-        this.x = nx;
-        this.y = ny;
-    }
-
-    add(other: Vec2) {
-        this.x += other.x;
-        this.y += other.y;
-    }
-
-    angle() {
-        return Atan2(this.y, this.x);
-    }
-
-    length() {
-        return math.sqrt(Pow(this.x, 2) + Pow(this.y, 2));
-    }
+    size: number
 }
 
 export class ProjectileSystem {
@@ -54,7 +20,11 @@ export class ProjectileSystem {
 
     private projectiles: Projectile[] = [];
 
-    constructor() {
+
+    private collisionEngine: CollisionEngine
+
+    constructor(collisionEngine: CollisionEngine) {
+        this.collisionEngine = collisionEngine;
         this.tick.start(this.TICK_SPEED, true, () => this.onTick());
     }
 
@@ -76,8 +46,11 @@ export class ProjectileSystem {
             angleVelocity: def.angleVelocity * this.TICK_SPEED,
             effect: effect,
             distance: 0,
+            size: def.size,
             maxDistance: def.range,
         };
+
+        this.collisionEngine.addCollidable(proj);
 
         this.projectiles.push(proj);
     }
@@ -86,7 +59,6 @@ export class ProjectileSystem {
         for (const proj of this.projectiles) {
             //Apply angular velocity
             proj.velocity.rotate(proj.angleVelocity);
-            print(proj.velocity.angle());
 
             //Add velocity to position vector
             proj.pos.add(proj.velocity);
@@ -97,6 +69,11 @@ export class ProjectileSystem {
             //Resolve range limitations
             if (proj.distance >= proj.maxDistance) {
                 this.destroyProjectile(proj);
+            }
+
+            const collision = this.collisionEngine.getCollisions(proj);
+            if (collision) {
+                print("Collision!");
             }
 
             //Update position rendering

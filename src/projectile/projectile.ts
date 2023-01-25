@@ -3,4 +3,5 @@ export interface ProjDefinition {
     range: number
     speed: number,
     modelName: string
+    size: number
 }
