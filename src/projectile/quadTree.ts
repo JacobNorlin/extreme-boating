@@ -33,7 +33,8 @@ export class QuadTree<T extends Collidable> {
             return false;
         }
 
-        if (this.elms.length < this.CAPACITY && this.nw === null) {
+
+        if (this.elms.length < this.CAPACITY && !this.hasChildren()) {
             this.elms.push(elm);
             return true;
         }
@@ -73,7 +74,7 @@ export class QuadTree<T extends Collidable> {
         }
 
         const inRange = this.elms.filter((elm) => {
-            range.contains(elm.pos);
+            return range.contains(elm.pos);
         });
 
         if (!this.hasChildren()) {
