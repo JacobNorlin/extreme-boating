@@ -1,4 +1,4 @@
-import { AABB } from "../projectile/AABB";
+import { AABB } from "../engine/util/AABB";
 import { Rectangle } from "w3ts";
 
 class World {
