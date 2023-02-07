@@ -53,3 +53,15 @@ STRING 11
 Player 12
 }
 
+STRING 12
+// Units: h000 (Boat), Name (Name)
+{
+Boat
+}
+
+STRING 13
+// Abilities: A000 (Targetable), Name (Name)
+{
+Targetable
+}
+
