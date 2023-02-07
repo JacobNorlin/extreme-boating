@@ -1,7 +1,7 @@
 import { AABB } from "./AABB";
 
 interface Collidable {
-    pos: Point;
+    position: Point;
 }
 
 interface Point {
@@ -29,7 +29,7 @@ export class QuadTree<T extends Collidable> {
     }
 
     public insert(elm: T) {
-        if (!this.boundary.contains(elm.pos)) {
+        if (!this.boundary.contains(elm.position)) {
             return false;
         }
 
@@ -46,6 +46,12 @@ export class QuadTree<T extends Collidable> {
         const inserted = this.insertInChild(elm);
 
         return inserted;
+    }
+
+    public insertAll(elms: T[]) {
+        for (const elm of elms) {
+            this.insert(elm);
+        }
     }
 
     private insertInChild(elm: T) {
@@ -74,7 +80,7 @@ export class QuadTree<T extends Collidable> {
         }
 
         const inRange = this.elms.filter((elm) => {
-            return range.contains(elm.pos);
+            return range.contains(elm.position);
         });
 
         if (!this.hasChildren()) {
