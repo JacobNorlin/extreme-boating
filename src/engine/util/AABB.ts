@@ -62,4 +62,12 @@ export class AABB {
     sw() {
         return new AABB(this.x, this.y + this.h / 2, this.w / 2, this.h / 2);
     }
+
+    get right() {
+        return this.x + this.w;
+    }
+
+    get bottom() {
+        return this.y + this.h;
+    }
 }

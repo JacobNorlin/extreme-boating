@@ -68,4 +68,10 @@ export class Vec2 {
     clone() {
         return new Vec2(this.x, this.y);
     }
+
+    normalize() {
+        //The 0-vector can't be normalized so I guess that will throw?
+        this.divide(this.length());
+        return this;
+    }
 }

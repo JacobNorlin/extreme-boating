@@ -38,4 +38,8 @@ export class MotionComponent extends Component<"motion"> {
         this.inertia = inertia;
         this.angularVelocity = angularVelocity;
     }
+
+    dispose(): void {
+        
+    }
 }

@@ -16,4 +16,8 @@ export class PositionComponent extends Component<'position'>{
         super();
         this.position = new Vec2(x, y);
     }
+
+    dispose(): void {
+        
+    }
 }

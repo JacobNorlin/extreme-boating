@@ -19,6 +19,7 @@ export class CollisionSystem extends System<
     }
 
     update(entities: Set<Entity>, delta: number): void {
+        this.quadTree.disposeDebug();
         this.quadTree.empty();
 
         //Update the quad tree
@@ -27,21 +28,26 @@ export class CollisionSystem extends System<
             this.quadTree.insert(posComp);
         }
 
+        this.quadTree.debugRender();
+
+
         //Run through all entities to figure out what is colliding
         for (const entity of entities) {
             const collisionComp =
                 entity.getComponent<CollisionComponent>("collision");
-
-            //We can ignore items that don't care about collision events
-            if (!collisionComp.events.isActive()) {
-                continue;
-            }
 
             const posComp = entity.getComponent<PositionComponent>("position");
             const boundary = collisionComp.getBoundary(
                 posComp.position.x,
                 posComp.position.y
             );
+
+            collisionComp.debugRender(posComp.position.x, posComp.position.y);
+
+            //We can ignore items that don't care about collision events
+            if (!collisionComp.events.isActive()) {
+                continue;
+            }
 
             const colliding = this.quadTree.queryRange(boundary);
 

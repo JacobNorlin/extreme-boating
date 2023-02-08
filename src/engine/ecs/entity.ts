@@ -43,6 +43,13 @@ export class Entity {
     }
 
     destroy() {
+        this.dispose();
         ECS.getInstance().removeEntity(this);
+    }
+
+    dispose() {
+        for (const comp of this.componentMap.values()) {
+            comp.dispose();
+        }
     }
 }

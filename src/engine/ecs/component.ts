@@ -9,4 +9,6 @@ export type LiftCompType<C extends Component> = C extends Component<infer R> ? R
 export abstract class Component<CompType extends string = string> {
     abstract readonly type: CompType;
     owner?: Entity
+
+    abstract dispose(): void
 }

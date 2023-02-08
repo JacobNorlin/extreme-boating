@@ -22,4 +22,8 @@ export class UnitComponent implements Component<"unit"> {
     getAngle() {
         return math.rad(this.unit.facing);
     }
+
+    dispose(): void {
+        this.unit.destroy();
+    }
 }

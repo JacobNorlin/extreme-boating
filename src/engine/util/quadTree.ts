@@ -1,4 +1,5 @@
 import { AABB } from "./AABB";
+import { DebugRenderer } from "./debugRenderer";
 
 interface Collidable {
     position: Point;
@@ -18,6 +19,7 @@ export class QuadTree<T extends Collidable> {
     private ne: QuadTree<T> = null as any;
     private se: QuadTree<T> = null as any;
     private sw: QuadTree<T> = null as any;
+    private debugFx: any[] = [];
 
     constructor(boundary: AABB) {
         this.boundary = boundary;
@@ -27,6 +29,7 @@ export class QuadTree<T extends Collidable> {
         this.elms = [];
         this.subdivide();
     }
+
 
     public insert(elm: T) {
         if (!this.boundary.contains(elm.position)) {
@@ -103,5 +106,28 @@ export class QuadTree<T extends Collidable> {
             this.se !== null &&
             this.sw !== null
         );
+    }
+
+    debugRender() {
+        this.debugFx = DebugRenderer.renderBoxAsLightning(this.boundary);
+
+        if (!this.nw) {
+            return;
+        }
+        this.nw.debugRender();
+        this.ne.debugRender();
+        this.se.debugRender();
+        this.sw.debugRender();
+    }
+
+    disposeDebug() {
+        DebugRenderer.destroyDebugRender(this.debugFx);
+        if (!this.nw) {
+            return;
+        }
+        this.nw.disposeDebug();
+        this.ne.disposeDebug();
+        this.se.disposeDebug();
+        this.sw.disposeDebug();
     }
 }

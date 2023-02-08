@@ -115,9 +115,4 @@ export class Projectile extends Entity {
             this.destroy();
         });
     }
-
-    destroy(): void {
-        this.fx.destroy();
-        super.destroy();
-    }
 }

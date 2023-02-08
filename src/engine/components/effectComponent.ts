@@ -23,4 +23,8 @@ export class EffectComponent extends Component<'effect'>{
     setAngle(angle: number) {
         this.fx.setYaw(angle);
     }
+
+    dispose(): void {
+        this.fx.destroy();
+    }
 }

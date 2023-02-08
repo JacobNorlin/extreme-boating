@@ -10,4 +10,8 @@ export class CameraComponent extends Component<'camera'>{
         super();
         this.player = player;
     }
+
+    dispose(): void {
+        
+    }
 }
