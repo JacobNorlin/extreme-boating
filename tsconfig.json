@@ -18,7 +18,10 @@
     },
     "plugins": [
       {
-        "transform": "war3-transformer"
+        "transform": "war3-transformer",
+        "mapDir": "C:/projects/wc3/notwarlock/maps/map.w3x",
+        "entryFile": "C:/projects/wc3/notwarlock/src/main.ts",
+        "outputDir": "C:/projects/wc3/notwarlock/dist/map.w3x"
       }
     ],
     "types": [

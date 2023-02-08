@@ -1,4 +1,4 @@
-import { Unit, Timer, Trigger, addScriptHook, W3TS_HOOK } from "w3ts";
+import { Unit, Timer, Trigger, addScriptHook, W3TS_HOOK, TextTag } from "w3ts";
 import { Players } from "w3ts/globals";
 import { CameraComponent } from "./engine/components/cameraComponent";
 import { CollisionComponent } from "./engine/components/collisionComponent";
@@ -33,6 +33,13 @@ function tsMain() {
     try {
         wrapped.init();
         WORLD.initialize();
+
+        const tag = new TextTag();
+        tag.setPos(0, 0, 0);
+        tag.setText("Hello World", 12, true);
+        tag.setColor(0, 255, 0, 255);
+        tag.setVisible(true);
+        tag.setPermanent(true);
 
         const ecs = ECS.getInstance();
 

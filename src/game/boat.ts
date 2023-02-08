@@ -3,6 +3,7 @@ import { CameraComponent } from "../engine/components/cameraComponent";
 import { CollisionComponent } from "../engine/components/collisionComponent";
 import { MotionComponent } from "../engine/components/motionComponent";
 import { PositionComponent } from "../engine/components/positionComponent";
+import { TextComponent } from "../engine/components/textComponent";
 import { UnitComponent } from "../engine/components/unitComponent";
 import { Component } from "../engine/ecs/component";
 import { Entity } from "../engine/ecs/entity";
@@ -34,6 +35,7 @@ export class Boat extends Entity {
         }));
         this.addComponent(new CollisionComponent(120, player.id));
         this.addComponent(new CameraComponent(player));
+        this.addComponent(new TextComponent());
 
 
         this.leftCannon = new CannonAbility({

@@ -5,6 +5,7 @@ import { WORLD } from "../../game/world";
 import { PositionComponent } from "../components/positionComponent";
 import { EffectComponent } from "../components/effectComponent";
 import { UnitComponent } from "../components/unitComponent";
+import { TextComponent } from "../components/textComponent";
 
 export class MovementSystem extends System<
     [MotionComponent, PositionComponent]
@@ -50,19 +51,17 @@ export class MovementSystem extends System<
             //optional component types, so we just check here.
             if (entity.hasComponent<UnitComponent>("unit")) {
                 const unitComp = entity.getComponent<UnitComponent>("unit");
-                unitComp.updatePosition(
-                    posComp.position.x,
-                    posComp.position.y
-                );
+                unitComp.updatePosition(posComp.position.x, posComp.position.y);
 
                 //Allow using move commands to update velocity
                 const currSpeed = motionComp.velocity.length();
-                const wc3Angle = unitComp.getAngle()
+                const wc3Angle = unitComp.getAngle();
                 motionComp.velocity.x = currSpeed * math.cos(wc3Angle);
                 motionComp.velocity.y = currSpeed * math.sin(wc3Angle);
             }
             if (entity.hasComponent<EffectComponent>("effect")) {
-                const effectComp = entity.getComponent<EffectComponent>("effect");
+                const effectComp =
+                    entity.getComponent<EffectComponent>("effect");
                 effectComp.updatePosition(
                     posComp.position.x,
                     posComp.position.y
@@ -70,6 +69,10 @@ export class MovementSystem extends System<
 
                 //Effects can't move on user input so we can always sync the angle
                 effectComp.setAngle(motionComp.velocity.angle());
+            }
+            if (entity.hasComponent<TextComponent>("text")) {
+                const textComp = entity.getComponent<TextComponent>("text");
+                textComp.updatePosition(posComp.position.x, posComp.position.y);
             }
 
             motionComp.events.emit("move");
