@@ -23,10 +23,10 @@ export class CollisionComponent extends Component<"collision"> {
         this.group = group;
     }
 
-    getBoundary(pos: Vec2) {
+    getBoundary(x: number, y: number) {
         return new AABB(
-            pos.x - this.size / 2,
-            pos.y - this.size / 2,
+            x - this.size / 2,
+            y - this.size / 2,
             this.size,
             this.size
         );

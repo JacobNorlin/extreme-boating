@@ -1,9 +1,9 @@
 import { Entity } from "../../engine/ecs/entity";
 import { Logger } from "../../engine/util/logger";
-import { MotionComponent } from "../../engine/components/motionComponent";
 import { ECS } from "../../engine/ecs/ecs";
 import { EventModifier, Modifier } from "./modifier";
 import { Projectile } from "./projectile";
+import { PositionComponent } from "../../engine/components/positionComponent";
 
 const logger = Logger.getInstance("ChainModifer");
 
@@ -21,11 +21,12 @@ export class ChainModifier implements EventModifier {
     }
 
     run(p: Projectile, targetEntity: Entity): void {
-        const motion = p.getComponent<MotionComponent>("motion");
+        const posComp = p.getComponent<PositionComponent>("position");
+        const position = posComp.position;
 
         logger.log(`chain proj: ${p.id}, target: ${targetEntity.id}`);
         let targets = ECS.getInstance()
-            .getEntitiesInBounds(motion.position.x, motion.position.y, 1000)
+            .getEntitiesInBounds(position.x, position.y, 1000)
             .filter((t) => {
                 logger.log(`chain-filter target ${t.id}`);
                 return (
@@ -43,14 +44,16 @@ export class ChainModifier implements EventModifier {
         //Should probably sort these by distance
         const target = targets[0];
         logger.log(`Chain target: ${target.id}`);
-        const targetMotion = target.getComponent<MotionComponent>("motion");
+        const targetPosComp =
+            target.getComponent<PositionComponent>("position");
+        const targetPos = targetPosComp.position;
 
         const chain = new Projectile({
             ...p.config,
-            startX: motion.position.x,
-            startY: motion.position.y,
-            targetX: targetMotion.position.x,
-            targetY: targetMotion.position.y,
+            startX: position.x,
+            startY: position.y,
+            targetX: targetPos.x,
+            targetY: targetPos.y,
             modifiers: this.modifiers.slice(),
         });
 

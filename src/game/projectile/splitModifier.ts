@@ -1,4 +1,5 @@
 import { MotionComponent } from "../../engine/components/motionComponent";
+import { PositionComponent } from "../../engine/components/positionComponent";
 import { ECS } from "../../engine/ecs/ecs";
 import { EventModifier, Modifier } from "./modifier";
 import { Projectile } from "./projectile";
@@ -17,30 +18,32 @@ export class SplitModifier implements EventModifier {
     }
 
     run(p: Projectile) {
-        const motion = p.getComponent<MotionComponent>("motion");
+        const motionComp = p.getComponent<MotionComponent>("motion");
+        const posComp = p.getComponent<PositionComponent>("position");
+        const position = posComp.position;
 
-        const v1 = motion.velocity.clone().rotate(0.3);
-        const v2 = motion.velocity.clone().rotate(-0.3);
+        const v1 = motionComp.velocity.clone().rotate(0.3);
+        const v2 = motionComp.velocity.clone().rotate(-0.3);
 
         const p1 = new Projectile({
             ...p.config,
-            startX: motion.position.x,
-            startY: motion.position.y,
-            targetX: motion.position.x + v1.x,
-            targetY: motion.position.y + v1.y,
-            range: p.config.range /1.5,
+            startX: position.x,
+            startY: position.y,
+            targetX: position.x + v1.x,
+            targetY: position.y + v1.y,
+            range: p.config.range / 1.5,
             modifiers: this.modifiers.slice(),
-            angularVelocity: 0
+            angularVelocity: 0,
         });
         const p2 = new Projectile({
             ...p.config,
-            startX: motion.position.x,
-            startY: motion.position.y,
-            targetX: motion.position.x + v2.x,
-            targetY: motion.position.y + v2.y,
+            startX: position.x,
+            startY: position.y,
+            targetX: position.x + v2.x,
+            targetY: position.y + v2.y,
             range: p.config.range / 1.5,
             modifiers: this.modifiers.slice(),
-            angularVelocity: 0
+            angularVelocity: 0,
         });
 
         ECS.getInstance().addEntity(p1);

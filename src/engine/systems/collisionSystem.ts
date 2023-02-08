@@ -1,16 +1,16 @@
 import { CollisionComponent } from "../components/collisionComponent";
-import { MotionComponent } from "../components/motionComponent";
+import { PositionComponent } from "../components/positionComponent";
 import { Entity } from "../ecs/entity";
 import { System } from "../ecs/system";
 import { AABB } from "../util/AABB";
 import { QuadTree } from "../util/quadTree";
 
 export class CollisionSystem extends System<
-    [MotionComponent, CollisionComponent]
+    [PositionComponent, CollisionComponent]
 > {
-    types: ["motion", "collision"] = ["motion", "collision"];
+    types: ["position", "collision"] = ["position", "collision"];
 
-    private quadTree: QuadTree<MotionComponent>;
+    private quadTree: QuadTree<PositionComponent>;
 
     constructor(worldSize: AABB) {
         super();
@@ -23,8 +23,8 @@ export class CollisionSystem extends System<
 
         //Update the quad tree
         for (const entity of entities) {
-            const motionComp = entity.getComponent<MotionComponent>("motion");
-            this.quadTree.insert(motionComp);
+            const posComp = entity.getComponent<PositionComponent>("position");
+            this.quadTree.insert(posComp);
         }
 
         //Run through all entities to figure out what is colliding
@@ -37,8 +37,11 @@ export class CollisionSystem extends System<
                 continue;
             }
 
-            const motionComp = entity.getComponent<MotionComponent>("motion");
-            const boundary = collisionComp.getBoundary(motionComp.position);
+            const posComp = entity.getComponent<PositionComponent>("position");
+            const boundary = collisionComp.getBoundary(
+                posComp.position.x,
+                posComp.position.y
+            );
 
             const colliding = this.quadTree.queryRange(boundary);
 
@@ -47,7 +50,7 @@ export class CollisionSystem extends System<
                 if (!owner) {
                     continue;
                 }
-                const collidingWithSelf = collider === motionComp;
+                const collidingWithSelf = collider === posComp;
                 const ownerCollisionComp =
                     owner.getComponent<CollisionComponent>("collision");
                 const sameCollisionGroup =

@@ -1,12 +1,12 @@
-import { MotionComponent } from "engine/components/motionComponent";
-import { UnitComponent } from "engine/components/unitComponent";
-import { AABB } from "../util/AABB";
-import { QuadTree } from "../util/quadTree";
 import { Unit } from "w3ts";
-import { Component, ComponentCtor, LiftCompType } from "./component";
+import { PositionComponent } from "../components/positionComponent";
+import { UnitComponent } from "../components/unitComponent";
+import { AABB } from "../util/AABB";
+import { Logger } from "../util/logger";
+import { QuadTree } from "../util/quadTree";
+import { Component, LiftCompType } from "./component";
 import { Entity } from "./entity";
 import { System } from "./system";
-import { Logger } from "../util/logger";
 
 const logger = Logger.getInstance('ECS');
 
@@ -80,10 +80,10 @@ export class ECS {
             range + 10
         );
 
-        const tree = new QuadTree<MotionComponent>(bounds);
+        const tree = new QuadTree<PositionComponent>(bounds);
         const motionEntities = this.queryEntities(["motion"]);
         for (const entity of motionEntities) {
-            const motion = entity.getComponent<MotionComponent>("motion");
+            const motion = entity.getComponent<PositionComponent>("position");
             tree.insert(motion);
         }
 

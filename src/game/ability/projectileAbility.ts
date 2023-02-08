@@ -1,13 +1,13 @@
 
 import { Modifier } from "../projectile/modifier";
-import { MotionComponent } from "../../engine/components/motionComponent";
 import { ECS } from "../../engine/ecs/ecs";
 import { Entity } from "../../engine/ecs/entity";
 import { Loc } from "../../engine/util/types";
 import { Projectile } from "../projectile/projectile";
 import { WrappedAbility } from "./wrappedAbility";
-import { CollisionComponent } from "engine/components/collisionComponent";
 import { Logger } from "../../engine/util/logger";
+import { CollisionComponent } from "../../engine/components/collisionComponent";
+import { PositionComponent } from "../../engine/components/positionComponent";
 
 const logger = Logger.getInstance('ProjectileAbility');
 
@@ -45,11 +45,11 @@ export class ProjectileAbility {
 
     private cast(caster: Entity, target: Loc) {
         try {
-            const motion = caster.getComponent<MotionComponent>("motion");
+            const positionComp = caster.getComponent<PositionComponent>("position");
             const collision = caster.getComponent<CollisionComponent>('collision');
             const p = new Projectile({
-                startX: motion.position.x,
-                startY: motion.position.y,
+                startX: positionComp.position.x,
+                startY: positionComp.position.y,
                 targetX: target.x,
                 targetY: target.y,
                 model: "Fireball",

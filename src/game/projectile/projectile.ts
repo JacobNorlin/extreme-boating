@@ -5,11 +5,12 @@ import {
     MotionArgs,
     MotionComponent,
 } from "../../engine/components/motionComponent";
-import { Wc3PositionComponent } from "../../engine/components/wc3PositionComponent";
 import { Entity } from "../../engine/ecs/entity";
 import { ModelName, Models } from "../models";
 import { EventHandler } from "../../engine/event/eventHandler";
 import { Modifier } from "./modifier";
+import { PositionComponent } from "../../engine/components/positionComponent";
+import { EffectComponent } from "../../engine/components/effectComponent";
 
 interface ProjectileArgs {
     startX: number;
@@ -21,14 +22,14 @@ interface ProjectileArgs {
     model: ModelName;
     modifiers: Modifier[];
     collisionGroup: number;
-    angularVelocity: number,
-    owner: Entity
+    angularVelocity: number;
+    owner: Entity;
 }
 
 type ProjectileEvents = {
     collide: (projectile: Projectile, other: Entity) => void;
     expire: (projectile: Projectile) => void;
-    move: (projectile: Projectile) => void
+    move: (projectile: Projectile) => void;
 };
 
 export class Projectile extends Entity {
@@ -49,7 +50,13 @@ export class Projectile extends Entity {
         this.fx.scale = 0.5;
 
         this.addComponent(new CollisionComponent(120, config.collisionGroup));
-        this.addComponent(new Wc3PositionComponent(this.fx, true));
+        this.addComponent(
+            new PositionComponent({
+                x: this.config.startX,
+                y: this.config.startY,
+            })
+        );
+        this.addComponent(new EffectComponent({ fx: this.fx }));
         this.addComponent(new MotionComponent(this.getMotionArgs()));
 
         this.bindEvents();
@@ -57,16 +64,16 @@ export class Projectile extends Entity {
     }
 
     private runModifiers() {
-        this.config.modifiers.forEach(m => {
+        this.config.modifiers.forEach((m) => {
             switch (m.type) {
-                case 'event':
+                case "event":
                     m.bindEvents(this);
                     break;
-                case 'static':
+                case "static":
                     m.run(this);
                     break;
             }
-        })
+        });
     }
 
     private getMotionArgs(): MotionArgs {
@@ -78,11 +85,9 @@ export class Projectile extends Entity {
         return {
             velX: this.config.speed * Math.cos(angle),
             velY: this.config.speed * Math.sin(angle),
-            x: this.config.startX,
-            y: this.config.startY,
             inertia: 0,
             friction: 0,
-            angularVelocity: this.config.angularVelocity
+            angularVelocity: this.config.angularVelocity,
         };
     }
 
@@ -91,7 +96,7 @@ export class Projectile extends Entity {
         const collision = this.getComponent<CollisionComponent>("collision");
 
         motion.events.on("move", () => {
-            this.events.emit('move', this);
+            this.events.emit("move", this);
             if (motion.distance >= this.config.range) {
                 this.events.emit("expire", this);
                 this.destroy();
@@ -108,14 +113,6 @@ export class Projectile extends Entity {
             const otherMotion = other.getComponent<MotionComponent>("motion");
 
             this.destroy();
-
-            // const vecToOther = motion.position.diff(otherMotion.position);
-            // const angle = vecToOther.angle();
-            // const knockback = new Vec2(
-            //     1000 * Math.cos(angle),
-            //     1000 * Math.sin(angle)
-            // );
-            // otherMotion.velocity.add(knockback);
         });
     }
 

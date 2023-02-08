@@ -1,26 +1,22 @@
 import { EventHandler } from "../event/eventHandler";
-import { Unit } from "w3ts";
 import { Component } from "../ecs/component";
 import { Vec2 } from "../util/vec2";
 
 export interface MotionArgs {
-    x: number;
-    y: number;
     velX: number;
     velY: number;
     friction: number;
     inertia: number;
-    angularVelocity: number
+    angularVelocity: number;
 }
 
 type MotionEvents = {
-    'move': <T>(this: T) => void
-}
+    move: <T>(this: T) => void;
+};
 
 export class MotionComponent extends Component<"motion"> {
     type: "motion" = "motion";
 
-    position: Vec2;
     velocity: Vec2;
     friction: number;
     inertia: number;
@@ -29,12 +25,17 @@ export class MotionComponent extends Component<"motion"> {
 
     events = new EventHandler<MotionEvents>();
 
-    constructor(args: MotionArgs) {
+    constructor({
+        velX = 0,
+        velY = 0,
+        friction = 0,
+        inertia = 0,
+        angularVelocity = 0,
+    }: Partial<MotionArgs>) {
         super();
-        this.position = new Vec2(args.x, args.y);
-        this.velocity = new Vec2(args.velX, args.velY);
-        this.friction = args.friction;
-        this.inertia = args.inertia;
-        this.angularVelocity = args.angularVelocity;
+        this.velocity = new Vec2(velX, velY);
+        this.friction = friction;
+        this.inertia = inertia;
+        this.angularVelocity = angularVelocity;
     }
 }

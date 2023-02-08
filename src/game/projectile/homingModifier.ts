@@ -1,9 +1,10 @@
-import { Entity } from "../../engine/ecs/entity";
 import { Logger } from "../../engine/util/logger";
 import { MotionComponent } from "../../engine/components/motionComponent";
 import { ECS } from "../../engine/ecs/ecs";
 import { EventModifier, Modifier } from "./modifier";
 import { Projectile } from "./projectile";
+import { PositionComponent } from "../../engine/components/positionComponent";
+import { Vec2 } from "../../engine/util/vec2";
 
 const logger = Logger.getInstance("ChainModifer");
 
@@ -23,11 +24,16 @@ export class HomingModifier implements EventModifier {
 
     run(p: Projectile): void {
         const motion = p.getComponent<MotionComponent>("motion");
+        const posComp = p.getComponent<PositionComponent>("position");
 
         let targets = ECS.getInstance()
-            .getEntitiesInBounds(motion.position.x, motion.position.y, 1000)
+            .getEntitiesInBounds(posComp.position.x, posComp.position.y, 1000)
             .filter((t) => {
-                return t.id !== p.id && p.config.owner.id !== t.id && !(t instanceof Projectile)
+                return (
+                    t.id !== p.id &&
+                    p.config.owner.id !== t.id &&
+                    !(t instanceof Projectile)
+                );
             });
 
         if (targets.length === 0) {
@@ -38,26 +44,28 @@ export class HomingModifier implements EventModifier {
         let minDist = 10000;
         let closest = targets[0];
         for (const target of targets) {
-            const targetMotion = target.getComponent<MotionComponent>("motion");
-            const dist = motion.position.diff(targetMotion.position).length();
+            const targetPos =
+                target.getComponent<PositionComponent>("position");
+            const dist = new Vec2(
+                posComp.position.x - targetPos.position.x,
+                posComp.position.y - targetPos.position.y
+            ).length();
             if (dist < minDist) {
                 minDist = dist;
                 closest = target;
             }
         }
 
-        const targetMotion = closest.getComponent<MotionComponent>("motion");
-        const dist = motion.position.diff(targetMotion.position);
+        const targetPos = closest.getComponent<PositionComponent>("position");
+        const dist = new Vec2(
+            posComp.position.x - targetPos.position.x,
+            posComp.position.y - targetPos.position.y
+        );
         const midPoint = dist.add(motion.velocity);
         midPoint.multiply(motion.velocity.length() / midPoint.length());
         print(midPoint.length());
 
         motion.velocity.x = midPoint.x;
         motion.velocity.y = midPoint.y;
-
-        // const half = motion.velocity.clone().add(dist).divide(2).rotate(math.pi);
-
-        // motion.velocity.x = half.x;
-        // motion.velocity.y = half.y;
     }
 }

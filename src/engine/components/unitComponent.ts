@@ -9,4 +9,17 @@ export class UnitComponent implements Component<"unit"> {
     constructor(unit: Unit) {
         this.unit = unit;
     }
+
+    updatePosition(x: number, y: number) {
+        this.unit.x = x;
+        this.unit.y = y;
+    }
+
+    setAngle(angle: number) {
+        this.unit.facing = math.deg(angle);
+    }
+
+    getAngle() {
+        return math.rad(this.unit.facing);
+    }
 }

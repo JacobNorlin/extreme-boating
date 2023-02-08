@@ -1,25 +1,24 @@
-import { Wc3PositionComponent } from "../components/wc3PositionComponent";
 import { MotionComponent } from "../components/motionComponent";
-import { UnitComponent } from "../components/unitComponent";
 import { Entity } from "../ecs/entity";
 import { System } from "../ecs/system";
 import { WORLD } from "../../game/world";
+import { PositionComponent } from "../components/positionComponent";
+import { EffectComponent } from "../components/effectComponent";
+import { UnitComponent } from "../components/unitComponent";
 
-export class MovementSystem extends System<[MotionComponent, Wc3PositionComponent]> {
-    types: ["motion", "wc3-position"] = ["motion", "wc3-position"];
+export class MovementSystem extends System<
+    [MotionComponent, PositionComponent]
+> {
+    types: ["motion", "position"] = ["motion", "position"];
 
     update(entities: Set<Entity>, delta: number): void {
         for (const entity of entities) {
             const motionComp = entity.getComponent<MotionComponent>("motion");
-            const wc3PositionComp = entity.getComponent<Wc3PositionComponent>("wc3-position");
-
-            //Sync unit position to motion component
-            motionComp.position.x = wc3PositionComp.x;
-            motionComp.position.y = wc3PositionComp.y;
+            const posComp = entity.getComponent<PositionComponent>("position");
 
             //Update the position from velocity
             const deltaVel = motionComp.velocity.getMultiplied(delta);
-            motionComp.position.add(deltaVel);
+            posComp.position.add(deltaVel);
             motionComp.distance += deltaVel.length();
 
             //Update velocity
@@ -31,41 +30,49 @@ export class MovementSystem extends System<[MotionComponent, Wc3PositionComponen
                 motionComp.velocity.rotate(motionComp.angularVelocity);
             }
 
-            if (wc3PositionComp.syncAngle) {
-                wc3PositionComp.facing = motionComp.velocity.angle();
+            //Clamp the position to world bounds to prevent wc3 from crashing
+            if (posComp.position.x > WORLD.maxX) {
+                posComp.position.x = WORLD.minX;
             }
+            if (posComp.position.x < WORLD.minX) {
+                posComp.position.x = WORLD.maxX;
+            }
+            if (posComp.position.y > WORLD.maxY) {
+                posComp.position.y = WORLD.minY;
+            }
+            if (posComp.position.y < WORLD.minY) {
+                posComp.position.y = WORLD.maxY;
+            }
+            posComp.position.clampMin(WORLD.minX, WORLD.minY);
+            posComp.position.clampMax(WORLD.maxX, WORLD.maxY);
 
-            //To handle gliding and using the turn rate of the unit
-            if (wc3PositionComp.syncWc3AngleToVelocity) {
+            //Realize the position into wc3. System's currently don't support
+            //optional component types, so we just check here.
+            if (entity.hasComponent<UnitComponent>("unit")) {
+                const unitComp = entity.getComponent<UnitComponent>("unit");
+                unitComp.updatePosition(
+                    posComp.position.x,
+                    posComp.position.y
+                );
+
+                //Allow using move commands to update velocity
                 const currSpeed = motionComp.velocity.length();
-                const wc3Angle = wc3PositionComp.facing;
+                const wc3Angle = unitComp.getAngle()
                 motionComp.velocity.x = currSpeed * math.cos(wc3Angle);
                 motionComp.velocity.y = currSpeed * math.sin(wc3Angle);
             }
+            if (entity.hasComponent<EffectComponent>("effect")) {
+                const effectComp = entity.getComponent<EffectComponent>("effect");
+                effectComp.updatePosition(
+                    posComp.position.x,
+                    posComp.position.y
+                );
 
-            //Clamp the position to world bounds to prevent wc3 from crashing
-            if (motionComp.position.x > WORLD.maxX) {
-                motionComp.position.x = WORLD.minX;
+                //Effects can't move on user input so we can always sync the angle
+                effectComp.setAngle(motionComp.velocity.angle());
             }
-            if (motionComp.position.x < WORLD.minX) {
-                motionComp.position.x = WORLD.maxX;
-            }
-            if (motionComp.position.y > WORLD.maxY) {
-                motionComp.position.y = WORLD.minY;
-            }
-            if (motionComp.position.y < WORLD.minY) {
-                motionComp.position.y = WORLD.maxY;
-            }
-            motionComp.position.clampMin(WORLD.minX, WORLD.minY);
-            motionComp.position.clampMax(WORLD.maxX, WORLD.maxY);
 
-            //Realize position to wc3
-            wc3PositionComp.x = motionComp.position.x;
-            wc3PositionComp.y = motionComp.position.y;
-
-            motionComp.events.emit('move');
-
+            motionComp.events.emit("move");
         }
-
     }
 }

@@ -1,6 +1,6 @@
-import { CameraComponent } from "engine/components/cameraComponent";
-import { MotionComponent } from "engine/components/motionComponent";
-import { UnitComponent } from "engine/components/unitComponent";
+import { CameraComponent } from "../components/cameraComponent";
+import { MotionComponent } from "../components/motionComponent";
+import { PositionComponent } from "../components/positionComponent";
 import { Entity } from "../ecs/entity";
 import { System } from "../ecs/system";
 
@@ -10,14 +10,14 @@ export class CameraSystem extends System<[CameraComponent, MotionComponent]> {
     update(entities: Set<Entity>, delta: number): void {
         for (const entity of entities) {
             const cameraComp = entity.getComponent<CameraComponent>("camera");
-            const motionComp = entity.getComponent<MotionComponent>("motion");
+            const posComp = entity.getComponent<PositionComponent>("position");
 
             //Sync camera position to the unit.
             //This will break if you have multiple units for the same camera
             PanCameraToTimedForPlayer(
                 cameraComp.player.handle,
-                motionComp.position.x,
-                motionComp.position.y,
+                posComp.position.x,
+                posComp.position.y,
                 0
             );
         }

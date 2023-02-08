@@ -1,4 +1,3 @@
-import { Entity } from "engine/ecs/entity";
 import { Projectile } from "./projectile";
 
 export type Modifier = EventModifier | StaticModifier;

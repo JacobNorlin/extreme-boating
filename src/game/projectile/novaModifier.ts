@@ -1,4 +1,4 @@
-import { MotionComponent } from "../../engine/components/motionComponent";
+import { PositionComponent } from "../../engine/components/positionComponent";
 import { ECS } from "../../engine/ecs/ecs";
 import { EventModifier, Modifier } from "./modifier";
 import { Projectile } from "./projectile";
@@ -16,16 +16,17 @@ export class NovaModifier implements EventModifier {
     }
 
     run(projectile: Projectile) {
-        const motion = projectile.getComponent<MotionComponent>("motion");
+        const posComp = projectile.getComponent<PositionComponent>("position");
+        const position = posComp.position;
 
         for (let i = 0; i < 6; i++) {
             const angle = ((math.pi * 2) / 6) * i;
             const p = new Projectile({
                 ...projectile.config,
-                startX: motion.position.x,
-                startY: motion.position.y,
-                targetX: motion.position.x + 2 * Math.cos(angle),
-                targetY: motion.position.y + 2 * Math.sin(angle),
+                startX: position.x,
+                startY: position.y,
+                targetX: position.x + 2 * Math.cos(angle),
+                targetY: position.y + 2 * Math.sin(angle),
                 range: projectile.config.range,
                 speed: projectile.config.speed,
                 modifiers: this.modifiers.slice(),
