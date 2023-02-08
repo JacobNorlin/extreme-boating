@@ -1,7 +1,23 @@
-import { ProjectileSystem } from "projectile/projectileSystem";
-import { Point, Timer, Trigger, Unit } from "w3ts";
+import { Unit, Timer, Trigger, addScriptHook, W3TS_HOOK } from "w3ts";
 import { Players } from "w3ts/globals";
-import { addScriptHook, W3TS_HOOK } from "w3ts/hooks";
+import { CameraComponent } from "./engine/components/cameraComponent";
+import { CollisionComponent } from "./engine/components/collisionComponent";
+import { MotionComponent } from "./engine/components/motionComponent";
+import { PositionComponent } from "./engine/components/positionComponent";
+import { UnitComponent } from "./engine/components/unitComponent";
+import { ECS } from "./engine/ecs/ecs";
+import { Entity } from "./engine/ecs/entity";
+import { CameraSystem } from "./engine/systems/cameraSystem";
+import { CollisionSystem } from "./engine/systems/collisionSystem";
+import { MovementSystem } from "./engine/systems/movementSystem";
+import { wrapped } from "./engine/util/logger";
+import { Boat } from "./game/boat";
+import { ChainModifier } from "./game/projectile/chainModifier";
+import { HomingModifier } from "./game/projectile/homingModifier";
+import { NovaModifier } from "./game/projectile/novaModifier";
+import { SplitModifier } from "./game/projectile/splitModifier";
+import { WORLD } from "./game/world";
+
 
 const BUILD_DATE = compiletime(() => new Date().toUTCString());
 const TS_VERSION = compiletime(() => require("typescript").version);
@@ -14,30 +30,73 @@ function tsMain() {
     print(" ");
     print("Welcome to TypeScript!");
 
-    const unit = new Unit(Players[0], FourCC("hfoo"), 0, 0, 270);
-    unit.name = "TypeScript";
+    try {
+        wrapped.init();
+        WORLD.initialize();
 
-    new Timer().start(1.0, true, () => {
-        unit.color = Players[math.random(0, bj_MAX_PLAYERS)].color;
-    });
+        const ecs = ECS.getInstance();
 
-    const t = new Trigger();
+        const boat = new Boat([], Players[0]);
 
-    const ps = new ProjectileSystem();
+        ecs.addEntity(boat);
 
-    const projDef = {
-        angleVelocity: 1,
-        speed: 500,
-        range: 1000,
-        modelName: "Abilities\\Weapons\\SorceressMissile\\SorceressMissile.mdl",
+        const collisionSystem = new CollisionSystem(WORLD.getAABB());
+        const movementSystem = new MovementSystem();
+        const cameraSystem = new CameraSystem();
+
+        ecs.addSystem(collisionSystem);
+        ecs.addSystem(movementSystem);
+        ecs.addSystem(cameraSystem);
+
+        const tick = new Timer();
+        tick.start(0.03, true, () => {
+            try {
+                ecs.runSystems(0.03);
+            } catch (e) {
+                print(e);
+            }
+        });
+        const pt = new Trigger();
+        pt.registerPlayerChatEvent(Players[0], "", false);
+
+        pt.addAction(() => {
+            const msg = GetEventPlayerChatString();
+
+            const split = msg.split(" ");
+            print(`Setting modifiers to ${split.join(" -> ")}`);
+            if (split.length === 0) {
+                return;
+            }
+            split.reverse();
+
+            const first = split.shift() as string;
+            const ctor = getModifierCtor(first);
+
+            const lastModifier = new ctor([]);
+
+            const finalModifier = split.reduce((acc, m) => {
+                const ctor = getModifierCtor(m);
+                return new ctor([acc]);
+            }, lastModifier);
+
+            boat.leftCannon.setProjectileModifiers(finalModifier);
+        });
+    } catch (e) {
+        print(e);
     }
-    t.registerAnyUnitEvent(EVENT_PLAYER_UNIT_SPELL_CAST);
-    t.addAction(() => {
-        print("cast");
-        const caster = Unit.fromEvent();
-        const targetLoc = Point.fromHandle(GetSpellTargetLoc());
-        ps.spawn(projDef, caster, targetLoc.x, targetLoc.y);
-    })
+}
+
+function getModifierCtor(m: string) {
+    if (m === "nova") {
+        return NovaModifier;
+    } else if (m === "split") {
+        return SplitModifier;
+    } else if (m === "chain") {
+        return ChainModifier;
+    } else if (m === "homing") {
+        return HomingModifier;
+    }
+    return null as any;
 }
 
 addScriptHook(W3TS_HOOK.MAIN_AFTER, tsMain);

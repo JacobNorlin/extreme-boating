@@ -65,3 +65,75 @@ STRING 13
 Targetable
 }
 
+STRING 14
+// Abilities: A001 (LeftCannon), Name (Name)
+{
+LeftCannon
+}
+
+STRING 15
+// Abilities: A001 (LeftCannon), Ubertip (Tooltip - Normal - Extended)
+{
+Shoots left
+}
+
+STRING 16
+// Abilities: A002 (CenterCannon), Name (Name)
+{
+CenterCannon
+}
+
+STRING 18
+// Abilities: A003 (RightCannon), Name (Name)
+{
+RightCannon
+}
+
+STRING 20
+// Abilities: A002 (CenterCannon), Ubertip (Tooltip - Normal - Extended)
+{
+Shoots forward
+}
+
+STRING 21
+// Abilities: A003 (RightCannon), Ubertip (Tooltip - Normal - Extended)
+{
+Shoots right
+}
+
+STRING 23
+// Abilities: A002 (CenterCannon), Hotkey (Hotkey - Normal)
+{
+W
+}
+
+STRING 25
+// Abilities: A001 (LeftCannon), Hotkey (Hotkey - Normal)
+{
+Q
+}
+
+STRING 27
+// Abilities: A003 (RightCannon), Hotkey (Hotkey - Normal)
+{
+E
+}
+
+STRING 28
+// Abilities: A001 (LeftCannon), Tip (Tooltip - Normal)
+{
+|cffffffffLeft|r Cannon
+}
+
+STRING 29
+// Abilities: A002 (CenterCannon), Tip (Tooltip - Normal)
+{
+|cffffffffCenter|r Cannon
+}
+
+STRING 30
+// Abilities: A003 (RightCannon), Tip (Tooltip - Normal)
+{
+|cffffffffRigh|rt Cannon
+}
+

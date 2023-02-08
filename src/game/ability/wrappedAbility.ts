@@ -16,8 +16,8 @@ export class WrappedAbility {
     events = new EventHandler<AbilityEvents>();
     abilityId: number;
 
-    constructor(abilityId: string) {
-        this.abilityId = FourCC(abilityId);
+    constructor(abilityId: number) {
+        this.abilityId = abilityId;
     }
 
     onCast() {
@@ -50,7 +50,6 @@ export class WrappedAbility {
         const castTrigger = new Trigger();
         this.triggers.push(castTrigger);
         castTrigger.registerAnyUnitEvent(EVENT_PLAYER_UNIT_SPELL_CAST);
-        castTrigger.addAction(() => this.onCast());
 
         const unitComp = entity.getComponent<UnitComponent>("unit");
         const unit = unitComp.unit;
@@ -62,5 +61,8 @@ export class WrappedAbility {
             const caster = Unit.fromEvent();
             return caster === unit && this.abilityId === abilityId;
         });
+
+        castTrigger.addAction(() => this.onCast());
+
     }
 }
