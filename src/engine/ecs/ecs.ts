@@ -10,11 +10,17 @@ import { System } from "./system";
 
 const logger = Logger.getInstance('ECS');
 
+type AwaitedCallback = {
+    duration: number;
+    callback: (this: any) => void
+}
+
 //Container for everything in the system
 export class ECS {
     private systems: System[] = [];
     private entities: Set<Entity> = new Set();
     private static _instance: ECS | null = null;
+    private awaitedCallbacks: Set<AwaitedCallback> = new Set();
 
     static getInstance() {
         if (!this._instance) {
@@ -25,6 +31,24 @@ export class ECS {
     }
 
     constructor() {}
+
+
+    awaitDuration(duration: number, callback: (this: any) => void) {
+        this.awaitedCallbacks.add({
+            duration: duration,
+            callback: callback
+        });
+    }
+
+    private tickAwaitedCallbacks(delta: number) {
+        for (const awaitedCallback of this.awaitedCallbacks) {
+            awaitedCallback.duration -= delta;
+            if (awaitedCallback.duration <= 0) {
+                awaitedCallback.callback();
+                this.awaitedCallbacks.delete(awaitedCallback);
+            }
+        }
+    }
 
     addEntity(entity: Entity) {
         logger.log(`Add entity: ${entity.id}`);
@@ -44,6 +68,11 @@ export class ECS {
             const matched = this.queryEntities(system.types);
             system.update(matched, delta);
         }
+    }
+
+    tick(delta: number) {
+        this.runSystems(delta);
+        this.tickAwaitedCallbacks(delta);
     }
 
     queryEntities(components: readonly LiftCompType<Component>[]) {
