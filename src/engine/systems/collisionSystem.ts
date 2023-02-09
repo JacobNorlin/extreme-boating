@@ -42,7 +42,7 @@ export class CollisionSystem extends System<
                 posComp.position.y
             );
 
-            collisionComp.debugRender(posComp.position.x, posComp.position.y);
+            // collisionComp.debugRender(posComp.position.x, posComp.position.y);
 
             //We can ignore items that don't care about collision events
             if (!collisionComp.events.isActive()) {
@@ -53,16 +53,23 @@ export class CollisionSystem extends System<
 
             for (const collider of colliding) {
                 const owner = collider.owner;
-                if (!owner) {
+                if (!owner || owner.id === entity.id) {
                     continue;
                 }
-                const collidingWithSelf = collider === posComp;
                 const ownerCollisionComp =
                     owner.getComponent<CollisionComponent>("collision");
+                
+                //Might pick up collisions with projectiles that have been
+                //disposed so they don't have a component?
+                //maybe need to store detected collisions before running
+                //any collision events?
+                if (!ownerCollisionComp) {
+                    continue;
+                }
                 const sameCollisionGroup =
                     ownerCollisionComp.group === collisionComp.group;
 
-                if (!collidingWithSelf && !sameCollisionGroup) {
+                if (!sameCollisionGroup) {
                     collisionComp.events.emit("collision", owner);
                 }
             }
