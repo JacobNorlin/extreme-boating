@@ -12,12 +12,14 @@ import { CollisionSystem } from "./engine/systems/collisionSystem";
 import { MovementSystem } from "./engine/systems/movementSystem";
 import { wrapped } from "./engine/util/logger";
 import { Boat } from "./game/boat";
+import { Powerup } from "./game/powerup";
 import { ChainModifier } from "./game/projectile/chainModifier";
+import { FrostModifier } from "./game/projectile/frostModifier";
 import { HomingModifier } from "./game/projectile/homingModifier";
+import { ProjectileModifier } from "./game/projectile/modifier";
 import { NovaModifier } from "./game/projectile/novaModifier";
 import { SplitModifier } from "./game/projectile/splitModifier";
 import { WORLD } from "./game/world";
-
 
 const BUILD_DATE = compiletime(() => new Date().toUTCString());
 const TS_VERSION = compiletime(() => require("typescript").version);
@@ -44,8 +46,11 @@ function tsMain() {
         const ecs = ECS.getInstance();
 
         const boat = new Boat([], Players[0]);
+        boat.getComponent<MotionComponent>('motion').velocity.multiply(2.5);
+        const boat2 = new Boat([], Players[1]);
 
         ecs.addEntity(boat);
+        ecs.addEntity(boat2);
 
         const collisionSystem = new CollisionSystem(WORLD.getAABB());
         const movementSystem = new MovementSystem();
@@ -67,43 +72,49 @@ function tsMain() {
         pt.registerPlayerChatEvent(Players[0], "", false);
 
         pt.addAction(() => {
-            const msg = GetEventPlayerChatString();
-
-            const split = msg.split(" ");
-            print(`Setting modifiers to ${split.join(" -> ")}`);
-            if (split.length === 0) {
-                return;
+            try {
+                const msg = GetEventPlayerChatString();
+    
+                const split = msg.split(" ");
+                print(`Setting modifiers to ${split.join(" -> ")}`);
+                if (split.length === 0) {
+                    return;
+                }
+                split.reverse();
+    
+                const first = split.shift() as string;
+                const lastModifier = getModifier(first, []);
+    
+                const finalModifier = split.reduce((acc, m) => {
+                    return getModifier(m, [acc]);
+                }, lastModifier);
+    
+                boat.leftCannon.setProjectileModifiers(finalModifier);
+            } catch (e) {
+                print(e);
             }
-            split.reverse();
-
-            const first = split.shift() as string;
-            const ctor = getModifierCtor(first);
-
-            const lastModifier = new ctor([]);
-
-            const finalModifier = split.reduce((acc, m) => {
-                const ctor = getModifierCtor(m);
-                return new ctor([acc]);
-            }, lastModifier);
-
-            boat.leftCannon.setProjectileModifiers(finalModifier);
         });
+
+        const power = new Powerup([], 100, 100, [new NovaModifier([], {})]);
+        ecs.addEntity(power);
     } catch (e) {
         print(e);
     }
 }
 
-function getModifierCtor(m: string) {
+function getModifier(m: string, modifiers: ProjectileModifier[]) {
     if (m === "nova") {
-        return NovaModifier;
+        return new NovaModifier(modifiers, {range: 250, speedModifier: 1.2, numProjs: 16});
     } else if (m === "split") {
-        return SplitModifier;
+        return new SplitModifier(modifiers);
     } else if (m === "chain") {
-        return ChainModifier;
+        return new ChainModifier(modifiers);
     } else if (m === "homing") {
-        return HomingModifier;
+        return new HomingModifier(modifiers);
+    } else if (m === "frost") {
+        return new FrostModifier(modifiers);
     }
-    return null as any;
+    return new FrostModifier(modifiers);
 }
 
 addScriptHook(W3TS_HOOK.MAIN_AFTER, tsMain);
