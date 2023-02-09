@@ -1,19 +1,16 @@
 import { Logger } from "../../engine/util/logger";
 import { MotionComponent } from "../../engine/components/motionComponent";
 import { ECS } from "../../engine/ecs/ecs";
-import { EventModifier, Modifier } from "./modifier";
+import { EventModifier, ProjectileModifier } from "./modifier";
 import { Projectile } from "./projectile";
 import { PositionComponent } from "../../engine/components/positionComponent";
 import { Vec2 } from "../../engine/util/vec2";
 
 const logger = Logger.getInstance("ChainModifer");
 
-export class HomingModifier implements EventModifier {
-    type: "event" = "event";
-    modifiers: Modifier[] = [];
-
-    constructor(modifiers: Modifier[]) {
-        this.modifiers = modifiers;
+export class HomingModifier extends EventModifier {
+    constructor(modifiers: ProjectileModifier[]) {
+        super(modifiers);
     }
 
     bindEvents(sourceProjectile: Projectile): void {
@@ -56,15 +53,25 @@ export class HomingModifier implements EventModifier {
             }
         }
 
-        const targetPos = closest.getComponent<PositionComponent>("position");
-        const dist = new Vec2(
-            posComp.position.x - targetPos.position.x,
-            posComp.position.y - targetPos.position.y
-        );
-        const midPoint = dist.add(motion.velocity);
-        midPoint.multiply(motion.velocity.length() / midPoint.length());
-        print(midPoint.length());
 
+
+        //Basic strategy here is to move the current velocity vector
+        //of the projectile to the midpoint between it's current trajectory
+        //and the position of the target. The "homingness" should be 
+        //adjustable by chosing a point less or more towards the middle
+        const targetPos = closest.getComponent<PositionComponent>("position");
+        //Find vector between projectile and target it is aiming for
+        const dist = new Vec2(
+            targetPos.position.x - posComp.position.x,
+            targetPos.position.y - posComp.position.y
+        );
+        //Find vector halfway between the projectiles current velocity
+        //and the direct path to the target
+        const midPoint = dist.add(motion.velocity);
+        //Normalize to length of current projectile velocity
+        midPoint.multiply(motion.velocity.length() / midPoint.length());
+
+        //Update velocity to the midpoint
         motion.velocity.x = midPoint.x;
         motion.velocity.y = midPoint.y;
     }

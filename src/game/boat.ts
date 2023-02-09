@@ -8,13 +8,14 @@ import { UnitComponent } from "../engine/components/unitComponent";
 import { Component } from "../engine/ecs/component";
 import { Entity } from "../engine/ecs/entity";
 import { AbilityIds } from "./ability/abilityIds";
-import { CannonAbility } from "./ability/cannonAbility";
+import { CannonAbility, CannonAmmoProvider } from "./ability/cannonAbility";
 
 export class Boat extends Entity {
 
     leftCannon: CannonAbility;
     private centerCannon: CannonAbility;
     private rightCannon: CannonAbility
+    private ammoProvider: CannonAmmoProvider;
 
     constructor(components: Component[], player: MapPlayer) {
         super(components);
@@ -37,25 +38,38 @@ export class Boat extends Entity {
         this.addComponent(new CameraComponent(player));
         this.addComponent(new TextComponent());
 
+        this.ammoProvider = new CannonAmmoProvider(this);
 
         this.leftCannon = new CannonAbility({
             abilityId: AbilityIds.LeftCannon,
             owner: this,
-            angle: math.pi / 2
+            angle: math.pi / 2,
+            name: "Left",
+            ammoProvider: this.ammoProvider
         });
 
         this.centerCannon = new CannonAbility({
             abilityId: AbilityIds.CenterCannon,
             owner: this,
-            angle: 0
+            angle: 0,
+            name: "Center",
+            ammoProvider: this.ammoProvider
         });
 
         this.rightCannon = new CannonAbility({
             abilityId: AbilityIds.RightCannon,
             owner: this,
-            angle: -math.pi / 2
+            angle: -math.pi / 2,
+            name: "Right",
+            ammoProvider: this.ammoProvider
         });
-        
     }
+
+    dispose(): void {
+        this.ammoProvider.dispose();
+        super.dispose();
+    }
+
+
 
 }

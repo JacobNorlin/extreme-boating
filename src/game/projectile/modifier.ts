@@ -1,14 +1,21 @@
 import { Projectile } from "./projectile";
 
-export type Modifier = EventModifier | StaticModifier;
+export type ProjectileModifier = EventModifier | StaticModifier;
 
-export interface EventModifier {
-    type: "event";
-    modifiers: Modifier[];
-    bindEvents(p: Projectile): void;
+export abstract class EventModifier{
+    type = "event" as const;
+    modifierType = "projectile" as const;
+    modifiers: ProjectileModifier[] = [];
+
+    constructor(modifiers: ProjectileModifier[]) {
+        this.modifiers = modifiers;
+    }
+
+    abstract bindEvents(p: Projectile): void;
 }
 
-export interface StaticModifier {
-    type: "static";
-    run(p: Projectile): void;
+export abstract class StaticModifier {
+    type = "static" as const;
+    abstract run(p: Projectile): void;
+    modifierType = "projectile" as const;
 }

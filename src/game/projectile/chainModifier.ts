@@ -1,17 +1,16 @@
 import { Entity } from "../../engine/ecs/entity";
 import { Logger } from "../../engine/util/logger";
 import { ECS } from "../../engine/ecs/ecs";
-import { EventModifier, Modifier } from "./modifier";
+import { EventModifier, ProjectileModifier } from "./modifier";
 import { Projectile } from "./projectile";
 import { PositionComponent } from "../../engine/components/positionComponent";
 
 const logger = Logger.getInstance("ChainModifer");
 
-export class ChainModifier implements EventModifier {
+export class ChainModifier extends EventModifier {
     type: "event" = "event";
-    modifiers: Modifier[] = [];
-    constructor(modifiers: Modifier[]) {
-        this.modifiers = modifiers;
+    constructor(modifiers: ProjectileModifier[]) {
+        super(modifiers);
     }
 
     bindEvents(sourceProjectile: Projectile): void {

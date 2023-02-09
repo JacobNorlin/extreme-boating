@@ -8,7 +8,7 @@ import {
 import { Entity } from "../../engine/ecs/entity";
 import { ModelName, Models } from "../models";
 import { EventHandler } from "../../engine/event/eventHandler";
-import { Modifier } from "./modifier";
+import { ProjectileModifier } from "./modifier";
 import { PositionComponent } from "../../engine/components/positionComponent";
 import { EffectComponent } from "../../engine/components/effectComponent";
 
@@ -20,7 +20,7 @@ interface ProjectileArgs {
     speed: number;
     range: number;
     model: ModelName;
-    modifiers: Modifier[];
+    modifiers: ProjectileModifier[];
     collisionGroup: number;
     angularVelocity: number;
     owner: Entity;

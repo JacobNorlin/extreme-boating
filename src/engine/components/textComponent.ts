@@ -11,8 +11,8 @@ export class TextComponent extends Component<"text"> {
         super();
     }
 
-    setLine(title: string, value: string) {
-        this.lines[title] = value;
+    setLine(title: string, value: string|number, size: number = 12) {
+        this.lines[title] = '' + value;
 
         this.dispose();
 
@@ -21,8 +21,7 @@ export class TextComponent extends Component<"text"> {
             const value = this.lines[key];
             const tag = new TextTag();
             tag.setPermanent(true);
-            print(`Update tag with ${key}: ${value}`);
-            tag.setText(`${key}: ${value}`, 12, true);
+            tag.setText(`${key}: ${value}`, size, true);
             tag.setColor(255, 0, 0, 255);
             tag.setVisible(true);
             tag.setVelocity(0, 0);
