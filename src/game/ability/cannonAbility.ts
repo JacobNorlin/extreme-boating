@@ -1,10 +1,12 @@
-import { Timer } from "../../../node_modules/w3ts/index";
+import { Effect, Timer } from "../../../node_modules/w3ts/index";
 import { CollisionComponent } from "../../engine/components/collisionComponent";
 import { MotionComponent } from "../../engine/components/motionComponent";
 import { PositionComponent } from "../../engine/components/positionComponent";
 import { TextComponent } from "../../engine/components/textComponent";
 import { ECS } from "../../engine/ecs/ecs";
 import { Entity } from "../../engine/ecs/entity";
+import { Vec2 } from "../../engine/util/vec2";
+import { Models } from "../models";
 import { ProjectileModifier } from "../projectile/modifier";
 import { Projectile } from "../projectile/projectile";
 import { WrappedAbility } from "./wrappedAbility";
@@ -14,12 +16,10 @@ type CannonAbilityArgs = {
     angle?: number;
     owner: Entity;
     name: string;
-    ammoProvider: CannonAmmoProvider
+    ammoProvider: CannonAmmoProvider;
 };
 
-
-export class CannonAmmoProvider{
-
+export class CannonAmmoProvider {
     private maxAmmo = 6;
     private currAmmo = 6;
     private owner: Entity;
@@ -50,17 +50,16 @@ export class CannonAmmoProvider{
     }
 
     updateAmmoText() {
-        if (!this.owner.hasComponent<TextComponent>('text')) {
+        if (!this.owner.hasComponent<TextComponent>("text")) {
             return;
         }
-        const textComp = this.owner.getComponent<TextComponent>('text');
-        textComp.setLine('Ammo', this.currAmmo, 8);
+        const textComp = this.owner.getComponent<TextComponent>("text");
+        textComp.setLine("Ammo", this.currAmmo, 8);
     }
 
     dispose() {
         this.autoReplenishTimer.destroy();
     }
-
 }
 
 export class CannonAbility {
@@ -76,7 +75,13 @@ export class CannonAbility {
 
     private ammoTimer = new Timer();
 
-    constructor({ abilityId, owner, name, ammoProvider, angle = 0 }: CannonAbilityArgs) {
+    constructor({
+        abilityId,
+        owner,
+        name,
+        ammoProvider,
+        angle = 0,
+    }: CannonAbilityArgs) {
         this.wrapped = new WrappedAbility(abilityId);
         this.angle = angle;
         this.owner = owner;
@@ -87,39 +92,71 @@ export class CannonAbility {
 
         this.wrapped.events.on("cast", (caster) => {
             this.fire(caster);
-        })
+        });
     }
 
     setProjectileModifiers(...modifiers: ProjectileModifier[]) {
         this.projectileModifiers = modifiers;
     }
 
-    fire(caster: Entity) {
-        if (!this.ammoProvider.hasAmmo()) {
-            return;
-        }
+
+    private getFirePos(caster: Entity) {
+        const posComp = caster.getComponent<PositionComponent>('position');
+        const motionComp = caster.getComponent<MotionComponent>('motion');
+
+        //Target vector relative to caster position
+        const targetVec = motionComp.velocity.clone();
+        targetVec.rotate(this.angle);
+        //Make independent of caster velocity
+        targetVec.normalize();
+        //Offset so projectile isn't fire from inside the caster
+        targetVec.multiply(40);
+        //Translate to global coordinate system
+        targetVec.add(posComp.position);
+
+        return targetVec;
+    }
+
+    private fire(caster: Entity) {
+
+        const collisionComp = caster.getComponent<CollisionComponent>('collision');
+        const positionComp = caster.getComponent<PositionComponent>('position');
+        const motionComp = caster.getComponent<MotionComponent>('motion')
 
         this.ammoProvider.consumeAmmo();
 
-        const posComp = caster.getComponent<PositionComponent>("position");
-        const motionComp = caster.getComponent<MotionComponent>("motion");
-        const collisonComp =
-            caster.getComponent<CollisionComponent>("collision");
+        const firePos = this.getFirePos(caster);
+        //Projectiles target a point so just extend the fire position a bit
 
-        //Target is the casters current velocity rotated by some amount
-        //and ensured to have some actual length
-        const velClone = motionComp.velocity.clone();
-        const targetPos = velClone.rotate(this.angle).normalize();
+        const preFireFx = new Effect(
+            Models.Fire,
+            firePos.x,
+            firePos.y
+        );
 
+
+        const fireFx = new Effect(
+            Models.Cannonball,
+            firePos.x,
+            firePos.y
+        );
+        const fireAngle = firePos.clone().diff(positionComp.position).angle();
+        fireFx.scale = 0.7;
+        fireFx.setOrientation(fireAngle - math.pi/2, 0, 90);
+        fireFx.destroy();
+
+        ECS.getInstance().awaitDuration(0.3, () => {
+            preFireFx.destroy();
+        });
 
         const proj = new Projectile({
-            startX: posComp.position.x,
-            startY: posComp.position.y,
-            targetX: posComp.position.x + targetPos.x,
-            targetY: posComp.position.y + targetPos.y,
+            startX: positionComp.position.x,
+            startY: positionComp.position.y,
+            targetX: firePos.x,
+            targetY: firePos.y,
             angularVelocity: 0,
             model: "Cannonball",
-            collisionGroup: collisonComp.group,
+            collisionGroup: collisionComp.group,
             modifiers: this.projectileModifiers.slice(),
             owner: caster,
             range: 500,
@@ -127,9 +164,14 @@ export class CannonAbility {
         });
 
         //Perform a single velocity update to preserve caster momentum in proj
-        const projMotion = proj.getComponent<MotionComponent>('motion');
+        const projMotion = proj.getComponent<MotionComponent>("motion");
         projMotion.velocity.add(motionComp.velocity);
+        
 
+        //Move the caster slightly in opposite direction of the shot
+        positionComp.position.x += 5 * math.cos(fireAngle);
+        positionComp.position.y += 5 * math.sin(fireAngle);
+        
         ECS.getInstance().addEntity(proj);
     }
 }

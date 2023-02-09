@@ -47,7 +47,7 @@ export class Projectile extends Entity {
             config.startX,
             config.startY
         );
-        this.fx.scale = 0.5;
+        this.fx.scale = 1;
 
         this.addComponent(new CollisionComponent(120, config.collisionGroup));
         this.addComponent(
