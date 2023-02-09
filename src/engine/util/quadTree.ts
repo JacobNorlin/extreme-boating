@@ -10,6 +10,8 @@ interface Point {
     y: number;
 }
 
+const MAX_DEPTH = 6;
+
 export class QuadTree<T extends Collidable> {
     readonly CAPACITY = 4;
     private boundary: AABB;
@@ -20,9 +22,11 @@ export class QuadTree<T extends Collidable> {
     private se: QuadTree<T> = null as any;
     private sw: QuadTree<T> = null as any;
     private debugFx: any[] = [];
+    private depth: number;
 
-    constructor(boundary: AABB) {
+    constructor(boundary: AABB, depth = 0) {
         this.boundary = boundary;
+        this.depth = depth;
     }
 
     empty() {
@@ -30,14 +34,15 @@ export class QuadTree<T extends Collidable> {
         this.subdivide();
     }
 
-
     public insert(elm: T) {
         if (!this.boundary.contains(elm.position)) {
             return false;
         }
 
-
-        if (this.elms.length < this.CAPACITY && !this.hasChildren()) {
+        if (
+            this.depth === MAX_DEPTH ||
+            (this.elms.length < this.CAPACITY && !this.hasChildren())
+        ) {
             this.elms.push(elm);
             return true;
         }
@@ -65,10 +70,10 @@ export class QuadTree<T extends Collidable> {
     }
 
     private subdivide() {
-        this.nw = new QuadTree<T>(this.boundary.nw());
-        this.ne = new QuadTree<T>(this.boundary.ne());
-        this.se = new QuadTree<T>(this.boundary.se());
-        this.sw = new QuadTree<T>(this.boundary.sw());
+        this.nw = new QuadTree<T>(this.boundary.nw(), this.depth + 1);
+        this.ne = new QuadTree<T>(this.boundary.ne(), this.depth + 1);
+        this.se = new QuadTree<T>(this.boundary.se(), this.depth + 1);
+        this.sw = new QuadTree<T>(this.boundary.sw(), this.depth + 1);
 
         for (const elm of this.elms) {
             this.insertInChild(elm);
