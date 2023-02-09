@@ -1,6 +1,8 @@
 import { Effect } from "../../../node_modules/w3ts/index";
+import { BuffComponent } from "../../engine/components/buffComponent";
 import { PositionComponent } from "../../engine/components/positionComponent";
 import { Entity } from "../../engine/ecs/entity";
+import { SlowBuff } from "../ability/buff/slowBuff";
 import { Models } from "../models";
 import { EventModifier, ProjectileModifier } from "./modifier";
 import { Projectile } from "./projectile";
@@ -45,6 +47,15 @@ export class FrostModifier extends EventModifier {
             posComp.position.y
         );
         explodeFx.destroy();
+
+        if (target) {
+            print("Frost proj hit");
+            const targetBuffComp = target.getComponent<BuffComponent>('buff');
+            targetBuffComp.addBuff(new SlowBuff({
+                amount: 0.7,
+                duration: 5
+            }));
+        }
 
         this.dispose(p.id);
 
