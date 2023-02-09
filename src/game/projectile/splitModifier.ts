@@ -1,15 +1,12 @@
 import { MotionComponent } from "../../engine/components/motionComponent";
 import { PositionComponent } from "../../engine/components/positionComponent";
 import { ECS } from "../../engine/ecs/ecs";
-import { EventModifier, Modifier } from "./modifier";
+import { EventModifier, ProjectileModifier } from "./modifier";
 import { Projectile } from "./projectile";
 
-export class SplitModifier implements EventModifier {
-    type: "event" = "event";
-
-    modifiers: Modifier[] = [];
-    constructor(modifiers: Modifier[]) {
-        this.modifiers = modifiers;
+export class SplitModifier extends EventModifier {
+    constructor(modifiers: ProjectileModifier[]) {
+        super(modifiers);
     }
 
     bindEvents(p: Projectile): void {
