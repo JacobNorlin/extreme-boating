@@ -51,5 +51,6 @@ export class Entity {
         for (const comp of this.componentMap.values()) {
             comp.dispose();
         }
+        this.componentMap.clear();
     }
 }
