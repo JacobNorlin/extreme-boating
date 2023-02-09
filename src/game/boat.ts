@@ -1,4 +1,5 @@
 import { MapPlayer, Unit } from "../../node_modules/w3ts/index";
+import { BuffComponent } from "../engine/components/buffComponent";
 import { CameraComponent } from "../engine/components/cameraComponent";
 import { CollisionComponent } from "../engine/components/collisionComponent";
 import { MotionComponent } from "../engine/components/motionComponent";
@@ -37,6 +38,7 @@ export class Boat extends Entity {
         this.addComponent(new CollisionComponent(120, player.id));
         this.addComponent(new CameraComponent(player));
         this.addComponent(new TextComponent());
+        this.addComponent(new BuffComponent());
 
         this.ammoProvider = new CannonAmmoProvider(this);
 
