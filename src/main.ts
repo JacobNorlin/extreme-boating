@@ -7,6 +7,7 @@ import { PositionComponent } from "./engine/components/positionComponent";
 import { UnitComponent } from "./engine/components/unitComponent";
 import { ECS } from "./engine/ecs/ecs";
 import { Entity } from "./engine/ecs/entity";
+import { BuffSystem } from "./engine/systems/buffSystem";
 import { CameraSystem } from "./engine/systems/cameraSystem";
 import { CollisionSystem } from "./engine/systems/collisionSystem";
 import { MovementSystem } from "./engine/systems/movementSystem";
@@ -55,15 +56,17 @@ function tsMain() {
         const collisionSystem = new CollisionSystem(WORLD.getAABB());
         const movementSystem = new MovementSystem();
         const cameraSystem = new CameraSystem();
+        const buffSystem = new BuffSystem();
 
         ecs.addSystem(collisionSystem);
         ecs.addSystem(movementSystem);
         ecs.addSystem(cameraSystem);
+        ecs.addSystem(buffSystem);
 
         const tick = new Timer();
         tick.start(0.03, true, () => {
             try {
-                ecs.runSystems(0.03);
+                ecs.tick(0.03);
             } catch (e) {
                 print(e);
             }
