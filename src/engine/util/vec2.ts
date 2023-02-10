@@ -39,12 +39,13 @@ export class Vec2 {
     }
 
     angle() {
-        return Atan2(this.y, this.x);
+        return math.atan(this.y, this.x);
     }
 
     multiply(num: number) {
         this.x *= num;
         this.y *= num;
+        return this;
     }
 
     length() {
@@ -73,5 +74,9 @@ export class Vec2 {
         //The 0-vector can't be normalized so I guess that will throw?
         this.divide(this.length());
         return this;
+    }
+
+    static dot(a: Vec2, b: Vec2) {
+        return a.x * b.x + a.y * b.y;
     }
 }
